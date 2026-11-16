@@ -9,3 +9,7 @@ Key routing rules:
 - Ship/deploy/PR → invoke /ship
 
 Do not suggest or auto-invoke other gstack skills: they run when the user types them, or when a running skill hands off to them (`gstack-config set proactive all` routes every skill).
+
+## Testing
+
+Run `npm test` (Node built-in test runner, files in `test/`). No dependencies to install.
