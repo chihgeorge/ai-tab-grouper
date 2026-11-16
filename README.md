@@ -13,7 +13,7 @@ A Chrome extension that sorts your open tabs into named tab groups. An AI model 
 - New tabs are placed into a group a few seconds after they finish loading.
 - Click the toolbar icon to regroup every tab in the current window.
 - Tabs you grouped yourself are left alone in automatic mode. Pinned tabs are never touched.
-- A red `!` on the icon means the last AI call failed. Hover the icon to read why.
+- A `!` badge on the icon means the last AI call failed. Hover the icon to read why.
 
 ## Providers
 
@@ -31,7 +31,7 @@ For a local Ollama server, use base URL `http://localhost:11434/v1`, leave the k
 
 ## Privacy
 
-The extension sends tab titles and addresses (query strings removed) from the current window to the provider you selected, and nowhere else. The API key stays in `chrome.storage.local` on your device and is not synced.
+The extension sends tab titles and addresses (query strings removed) from the current window, plus the names of your existing tab groups, to the provider you selected, and nowhere else. It does not run in incognito windows. The API key stays in `chrome.storage.local` on your device and is not synced.
 
 ## Develop
 

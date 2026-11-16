@@ -1,8 +1,13 @@
 import { SYSTEM, buildPrompt, parsePlan } from './grouping.js';
 import { PROVIDERS, askAI } from './ai.js';
 
+const NONE = chrome.tabGroups.TAB_GROUP_ID_NONE;
+const MIN_GAP = 20000; // ms between automatic calls per window, so a self-reloading page cannot run up a bill
+
 const timers = {}; // windowId -> debounce timer
 const busy = new Set(); // windowIds with a request in flight
+const queued = new Map(); // windowId -> `all` flag of a run requested while busy
+const lastRun = {}; // windowId -> time of the last automatic call
 const lastSent = {}; // windowId -> the tab list last sent, so an unchanged list is not paid for twice
 
 async function loadConfig() {
@@ -10,9 +15,15 @@ async function loadConfig() {
   return { provider, apiKey: keys[provider] || '', model: models[provider] || PROVIDERS[provider].model, baseUrl, auto };
 }
 
+const ungroupedTabs = async (windowId, all) =>
+  (await chrome.tabs.query({ windowId, pinned: false })).filter((t) => /^https?:/.test(t.url) && (all || t.groupId === NONE));
+
 // all=true: regroup every tab (toolbar click). all=false: only place ungrouped tabs.
 async function regroup(windowId, all) {
-  if (busy.has(windowId)) return;
+  if (busy.has(windowId)) {
+    queued.set(windowId, all || queued.get(windowId) || false);
+    return;
+  }
   const cfg = await loadConfig();
   if (!all && !cfg.auto) return;
   if (cfg.provider === 'custom' ? !cfg.baseUrl || !cfg.model : !cfg.apiKey) {
@@ -20,28 +31,35 @@ async function regroup(windowId, all) {
     return;
   }
 
-  const tabs = (await chrome.tabs.query({ windowId, pinned: false })).filter(
-    (t) => /^https?:/.test(t.url) && (all || t.groupId === chrome.tabGroups.TAB_GROUP_ID_NONE),
-  );
-  const groups = await chrome.tabGroups.query({ windowId });
-  const names = groups.map((g) => g.title).filter(Boolean);
+  const tabs = await ungroupedTabs(windowId, all);
+  const names = (await chrome.tabGroups.query({ windowId })).map((g) => g.title).filter(Boolean);
   if (tabs.length === 0 || (tabs.length === 1 && names.length === 0)) return;
 
   const prompt = buildPrompt(tabs, names);
   if (!all && lastSent[windowId] === prompt) return;
 
   busy.add(windowId);
+  if (!all) lastRun[windowId] = Date.now();
   try {
     const plan = parsePlan(await askAI(cfg, SYSTEM, prompt), tabs.length, names);
-    lastSent[windowId] = prompt; // only after success, so a failed call is retried
+    lastSent[windowId] = prompt; // only after a good reply, so a failed call is retried
+
+    // The reply took seconds: tabs may have closed, moved window, or been grouped by hand since.
+    const stillHere = new Set((await ungroupedTabs(windowId, all)).map((t) => t.id));
+    const groups = await chrome.tabGroups.query({ windowId });
     for (const { name, tabs: idx } of plan) {
-      const tabIds = idx.map((i) => tabs[i].id);
-      const existing = groups.find((g) => g.title === name);
-      if (existing) {
-        await chrome.tabs.group({ groupId: existing.id, tabIds });
-      } else {
-        const groupId = await chrome.tabs.group({ tabIds, createProperties: { windowId } });
-        await chrome.tabGroups.update(groupId, { title: name });
+      const tabIds = idx.map((i) => tabs[i].id).filter((id) => stillHere.has(id));
+      if (tabIds.length === 0) continue;
+      try {
+        const existing = groups.find((g) => g.title === name);
+        if (existing) {
+          await chrome.tabs.group({ groupId: existing.id, tabIds });
+        } else {
+          const groupId = await chrome.tabs.group({ tabIds, createProperties: { windowId } });
+          await chrome.tabGroups.update(groupId, { title: name });
+        }
+      } catch (e) {
+        console.warn(`Skipped group "${name}":`, e.message); // e.g. the user is dragging a tab; the other groups still apply
       }
     }
     chrome.action.setBadgeText({ text: '' });
@@ -53,14 +71,23 @@ async function regroup(windowId, all) {
     console.error(e);
   } finally {
     busy.delete(windowId);
+    if (queued.has(windowId)) {
+      const again = queued.get(windowId);
+      queued.delete(windowId);
+      again ? regroup(windowId, true) : schedule(windowId);
+    }
   }
 }
 
+function schedule(windowId) {
+  // shortcut: an in-memory timer is lost if Chrome stops the worker; the longest wait (20s) is inside its 30s idle limit. Move to chrome.alarms if it grows.
+  clearTimeout(timers[windowId]);
+  const wait = Math.max(3000, (lastRun[windowId] || 0) + MIN_GAP - Date.now());
+  timers[windowId] = setTimeout(() => regroup(windowId, false), wait);
+}
+
 chrome.tabs.onUpdated.addListener((tabId, change, tab) => {
-  if (change.status !== 'complete' || tab.pinned || tab.groupId !== chrome.tabGroups.TAB_GROUP_ID_NONE) return;
-  // shortcut: an in-memory timer is lost if Chrome stops the worker; 3s is well inside its 30s idle limit. Move to chrome.alarms if the delay grows.
-  clearTimeout(timers[tab.windowId]);
-  timers[tab.windowId] = setTimeout(() => regroup(tab.windowId, false), 3000);
+  if (change.status === 'complete' && !tab.pinned && tab.groupId === NONE) schedule(tab.windowId);
 });
 
 chrome.action.onClicked.addListener((tab) => regroup(tab.windowId, true));

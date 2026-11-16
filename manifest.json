@@ -4,6 +4,7 @@
   "version": "0.1.0",
   "description": "Automatically sorts your open tabs into named tab groups using the AI provider you choose.",
   "minimum_chrome_version": "120",
+  "incognito": "not_allowed",
   "permissions": ["tabs", "tabGroups", "storage"],
   "host_permissions": [
     "https://api.anthropic.com/*",

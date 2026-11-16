@@ -21,6 +21,8 @@ export async function askAI({ provider, apiKey, model, baseUrl }, system, user) 
 
   const res = await fetch(url, {
     method: 'POST',
+    // Chrome stops a service worker whose fetch is still pending after 30s, with no error. Fail visibly first.
+    signal: AbortSignal.timeout(25000),
     headers: anthropic
       ? {
           'content-type': 'application/json',
