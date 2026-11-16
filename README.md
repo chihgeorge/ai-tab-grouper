@@ -14,8 +14,8 @@ A Chrome extension that sorts your open tabs into named tab groups. An AI model 
 - Click the toolbar icon to regroup every tab in the current window from scratch. Existing groups are dissolved and ignored, including ones you made by hand. Tabs that fit no group end up ungrouped. If the AI proposes no groups at all, nothing is changed.
 - The default shortcut for the same action is `Alt+Shift+G`. Chrome leaves it unassigned if another extension already uses it; set or change it at `chrome://extensions/shortcuts`.
 - Not yet verified: whether dissolving a group also removes Chrome's saved or synced copy of that tab group. If you rely on saved tab groups, try a full regroup on a throwaway window first.
-- Tabs you grouped yourself are left alone in automatic mode. Pinned tabs are never touched.
-- A `!` badge on the icon means the last AI call failed. Hover the icon to read why.
+- Tabs you grouped yourself are left alone in automatic mode. Pinned tabs and pages that are not `http`/`https` (such as `chrome://` pages) are never touched, even by a full regroup, so a group that holds one of those pages keeps it.
+- A `!` badge on the icon means the last AI call failed, or that a full regroup got no groups back from the AI. Hover the icon to read why.
 
 ## Providers
 
