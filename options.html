@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>AI Tab Grouper settings</title>
+  <style>
+    body { font: 15px/1.5 system-ui, sans-serif; max-width: 34rem; margin: 2rem auto; padding: 0 1rem; color-scheme: light dark; }
+    label { display: block; margin-top: 1rem; font-weight: 600; }
+    input[type=text], input[type=password], input[type=url], select { width: 100%; padding: .45rem; box-sizing: border-box; font: inherit; }
+    label.check { font-weight: 400; }
+    button { margin-top: 1.25rem; padding: .5rem 1.25rem; font: inherit; }
+    .note { font-size: 13px; opacity: .8; margin-top: 1.5rem; }
+  </style>
+</head>
+<body>
+  <h1>AI Tab Grouper</h1>
+  <form id="form">
+    <label for="provider">AI provider</label>
+    <select id="provider"></select>
+
+    <div id="baseUrlRow" hidden>
+      <label for="baseUrl">Base URL</label>
+      <input id="baseUrl" type="url" placeholder="http://localhost:11434/v1">
+    </div>
+
+    <label for="apiKey">API key</label>
+    <input id="apiKey" type="password" autocomplete="off">
+
+    <label for="model">Model</label>
+    <input id="model" type="text">
+
+    <label class="check"><input id="auto" type="checkbox"> Group new tabs automatically</label>
+
+    <button type="submit">Save</button>
+    <span id="status" role="status"></span>
+  </form>
+
+  <p class="note">
+    Privacy: to group your tabs, this extension sends the titles and addresses (without query strings) of the tabs in the
+    current window to the AI provider you chose above, and to nobody else. Your API key is stored only on this device.
+    Click the toolbar icon to regroup every tab in the window.
+  </p>
+  <script type="module" src="options.js"></script>
+</body>
+</html>

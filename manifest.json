@@ -1,0 +1,18 @@
+{
+  "manifest_version": 3,
+  "name": "AI Tab Grouper",
+  "version": "0.1.0",
+  "description": "Automatically sorts your open tabs into named tab groups using the AI provider you choose.",
+  "minimum_chrome_version": "120",
+  "permissions": ["tabs", "tabGroups", "storage"],
+  "host_permissions": [
+    "https://api.anthropic.com/*",
+    "https://api.openai.com/*",
+    "https://generativelanguage.googleapis.com/*",
+    "https://openrouter.ai/*"
+  ],
+  "optional_host_permissions": ["http://*/*", "https://*/*"],
+  "background": { "service_worker": "background.js", "type": "module" },
+  "action": { "default_title": "Regroup all tabs in this window" },
+  "options_ui": { "page": "options.html", "open_in_tab": true }
+}
