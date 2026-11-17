@@ -54,11 +54,12 @@ Default model: `claude-haiku-5-5`. Grouping 50 tabs is about 2,500 input tokens 
 
 ### Files
 
-- `manifest.json`: permissions `tabs`, `tabGroups`, `storage`; host permissions for the four built-in providers; any other host is requested at save time for a custom endpoint.
+- `manifest.json`: permissions `tabs`, `tabGroups`, `storage`, `notifications` (rename and regroup questions); the `Alt+Shift+G` shortcut; host permissions for the four built-in providers; any other host is requested at save time for a custom endpoint.
 - `background.js`: tab events, debounce, applies the plan with `chrome.tabs.group`.
 - `grouping.js`: pure functions. Builds the prompt, validates the AI's answer. Unit tested.
 - `ai.js`: the provider table and the one function that calls a provider.
-- `options.html` + `options.js`: provider, API key, model, auto on/off.
+- `options.html` + `options.js`: provider, API key, model, auto on/off, and whether to ask before renaming a group or replacing groups.
+- `eval/run.js`: checks the prompt in `grouping.js` against a real model; run by hand, not part of `npm test`.
 
 ### Privacy
 
