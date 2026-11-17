@@ -35,3 +35,31 @@ test('parsePlan throws on a reply with no usable JSON', () => {
   assert.throws(() => parsePlan('sorry, I cannot', 3), /no JSON/);
   assert.throws(() => parsePlan('{"result":[]}', 3), /no "groups"/);
 });
+
+test('parsePlan keeps a rename only for an existing group and only to an unused name', () => {
+  const reply = JSON.stringify({ groups: [
+    { name: 'Work', tabs: [0], rename: ' Projects ' },
+    { name: 'Fun', tabs: [1], rename: 'Work' },
+    { name: 'New', tabs: [2, 3], rename: 'Newer' },
+    { name: 'Docs', tabs: [4], rename: 7 },
+    { name: 'Misc', tabs: [5], rename: 'Projects' },
+    { name: 'Fun', tabs: [6], rename: 'Reading' },
+    { name: 'Reading', tabs: [7, 8] },
+  ] });
+  assert.deepEqual(parsePlan(reply, 9, ['Work', 'Fun', 'Docs', 'Misc']), [
+    { name: 'Work', tabs: [0], rename: 'Projects' },
+    { name: 'Fun', tabs: [1] },
+    { name: 'New', tabs: [2, 3] },
+    { name: 'Docs', tabs: [4] },
+    { name: 'Misc', tabs: [5] }, // a second group may not take a name another rename already claimed
+    { name: 'Fun', tabs: [6] }, // nor the name of a new group in the same reply
+    { name: 'Reading', tabs: [7, 8] },
+  ]);
+});
+
+test('parsePlan reads the JSON when the model adds text with braces after it', () => {
+  const reply = '{"groups":[{"name":"Dev","tabs":[0,1]}]}\n\nNote: tabs {2} and {3} fit nowhere.';
+  assert.deepEqual(parsePlan(reply, 4), [{ name: 'Dev', tabs: [0, 1] }]);
+  assert.deepEqual(parsePlan('Here you go: {"groups":[]} {"groups":[{"name":"X","tabs":[0,1]}]}', 2), []);
+  assert.throws(() => parsePlan('{"groups":[', 2), /no JSON/);
+});
