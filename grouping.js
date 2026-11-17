@@ -40,9 +40,10 @@ export function parsePlan(text, tabCount, groupNames = []) {
 
   const seen = new Set();
   const plan = [];
-  const taken = new Set([...groupNames, ...groups.map((g) => g?.name)]); // names a rename must not collide with
+  const cleanName = (g) => (typeof g?.name === 'string' ? g.name.trim().slice(0, 40) : '');
+  const taken = new Set([...groupNames, ...groups.map(cleanName)]); // names a rename must not collide with
   for (const g of groups) {
-    const name = typeof g?.name === 'string' ? g.name.trim().slice(0, 40) : '';
+    const name = cleanName(g);
     if (!name || !Array.isArray(g.tabs)) continue;
     const tabs = [...new Set(g.tabs)].filter((i) => Number.isInteger(i) && i >= 0 && i < tabCount && !seen.has(i));
     if (tabs.length < (groupNames.includes(name) ? 1 : 2)) continue;

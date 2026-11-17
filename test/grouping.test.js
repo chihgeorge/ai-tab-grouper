@@ -44,7 +44,7 @@ test('parsePlan keeps a rename only for an existing group and only to an unused 
     { name: 'Docs', tabs: [4], rename: 7 },
     { name: 'Misc', tabs: [5], rename: 'Projects' },
     { name: 'Fun', tabs: [6], rename: 'Reading' },
-    { name: 'Reading', tabs: [7, 8] },
+    { name: ' Reading ', tabs: [7, 8] },
   ] });
   assert.deepEqual(parsePlan(reply, 9, ['Work', 'Fun', 'Docs', 'Misc']), [
     { name: 'Work', tabs: [0], rename: 'Projects' },
