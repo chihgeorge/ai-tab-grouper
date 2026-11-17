@@ -1,7 +1,7 @@
 import { PROVIDERS, customUrl } from './ai.js';
 
 const $ = (id) => document.getElementById(id);
-const cfg = { provider: 'anthropic', keys: {}, models: {}, baseUrl: '', auto: true, ...(await chrome.storage.local.get(null)) };
+const cfg = { provider: 'anthropic', keys: {}, models: {}, baseUrl: '', auto: true, rename: 'ask', ...(await chrome.storage.local.get(null)) };
 
 for (const [id, p] of Object.entries(PROVIDERS)) $('provider').add(new Option(p.label, id));
 
@@ -15,6 +15,7 @@ function show() {
   $('baseUrl').required = id === 'custom';
   $('baseUrl').value = cfg.baseUrl;
   $('auto').checked = cfg.auto;
+  $('rename').value = cfg.rename;
 }
 show();
 
@@ -23,6 +24,7 @@ function keep() {
   cfg.models[cfg.provider] = $('model').value.trim();
   cfg.baseUrl = $('baseUrl').value.trim();
   cfg.auto = $('auto').checked;
+  cfg.rename = $('rename').value;
 }
 
 $('provider').addEventListener('change', () => {

@@ -11,9 +11,14 @@ A Chrome extension that sorts your open tabs into named tab groups. An AI model 
 ## Use
 
 - New tabs are placed into a group a few seconds after they finish loading.
-- Click the toolbar icon to regroup every tab in the current window.
-- Tabs you grouped yourself are left alone in automatic mode. Pinned tabs are never touched.
-- A `!` badge on the icon means the last AI call failed. Hover the icon to read why.
+- Click the toolbar icon to regroup every tab in the current window from scratch. Existing groups are dissolved and ignored, including ones you made by hand. Tabs that fit no group end up ungrouped. If the AI proposes no groups at all, nothing is changed.
+- The default shortcut for the same action is `Alt+Shift+G`. Chrome leaves it unassigned if another extension already uses it; set or change it at `chrome://extensions/shortcuts`.
+- Not yet verified: whether dissolving a group also removes Chrome's saved or synced copy of that tab group. If you rely on saved tab groups, try a full regroup on a throwaway window first.
+- After grouping, new groups start collapsed. A new group stays open if it holds the tab you are looking at, or a tab from a group you had open.
+- When a new tab joins an existing group, the AI may suggest a wider name for that group. By default a Chrome notification asks you, with one button to rename and one to keep the name; ignoring it keeps the name. The settings page can switch this to rename automatically or to never rename. On macOS the two buttons sit under the notification's Options menu.
+- The same setting covers a full regroup: when the window already has groups, a notification lists the new group names and waits for you to press Regroup. Nothing changes until you do. If your tabs or groups change before you answer, or you answer after 5 minutes, nothing changes and the `!` badge asks you to click the icon again. A window with no groups is grouped straight away.
+- Tabs you grouped yourself are left alone in automatic mode. Pinned tabs and pages that are not `http`/`https` (such as `chrome://` pages) are never touched, even by a full regroup, so a group that holds one of those pages keeps it.
+- A `!` badge on the icon means the last AI call failed, or that a full regroup got no groups back from the AI. Hover the icon to read why.
 
 ## Providers
 

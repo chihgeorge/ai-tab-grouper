@@ -31,6 +31,13 @@
 
     <label class="check"><input id="auto" type="checkbox"> Group new tabs automatically</label>
 
+    <label for="rename">When the AI wants to rename a group, or a full regroup would replace your groups</label>
+    <select id="rename">
+      <option value="ask">Ask me with a notification first</option>
+      <option value="auto">Do it without asking</option>
+      <option value="keep">Never rename a group a tab joins; regroup without asking</option>
+    </select>
+
     <button type="submit">Save</button>
     <span id="status" role="status"></span>
   </form>
@@ -39,7 +46,8 @@
     Privacy: to group your tabs, this extension sends the titles and addresses (without query strings) of the tabs in the
     current window, plus the names of your existing tab groups, to the AI provider you chose above, and to nobody else.
     It does not run in incognito windows. Your API key is stored only on this device.
-    Click the toolbar icon to regroup every tab in the window.
+    Click the toolbar icon (default shortcut Alt+Shift+G, change it at chrome://extensions/shortcuts) to regroup every tab in the window
+    from scratch, ignoring existing groups.
   </p>
   <script type="module" src="options.js"></script>
 </body>
